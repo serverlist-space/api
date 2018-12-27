@@ -1,0 +1,17 @@
+{
+	"name": "serverlist.space",
+	"version": "1.0.1",
+	"description": "A simple library for connecting with the serverlist.space API.",
+	"main": "lib/Client.js",
+	"scripts": {
+		"docs": "jsdoc lib/ -R README.md -c .jsdoc.json"
+	},
+	"keywords": [],
+	"author": "PassTheMayo",
+	"license": "MIT",
+	"dependencies": {},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/serverlist-space/api.git"
+	}
+}
