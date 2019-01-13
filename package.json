@@ -1,6 +1,6 @@
 {
 	"name": "serverlist.space",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "A simple library for connecting with the serverlist.space API.",
 	"main": "lib/Client.js",
 	"scripts": {
