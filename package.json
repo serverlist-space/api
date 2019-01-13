@@ -1,6 +1,6 @@
 {
 	"name": "serverlist.space",
-	"version": "1.0.1",
+	"version": "1.0.0",
 	"description": "A simple library for connecting with the serverlist.space API.",
 	"main": "lib/Client.js",
 	"scripts": {
@@ -9,7 +9,10 @@
 	"keywords": [],
 	"author": "PassTheMayo",
 	"license": "MIT",
-	"dependencies": {},
+	"dependencies": {
+		"snekfetch": "^4.0.4",
+		"toast-jsdoc": "^1.0.2"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/serverlist-space/api.git"

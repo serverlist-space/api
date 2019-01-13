@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Structures/Server.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Client.html">Client</a><ul class='methods'><li data-type='method'><a href="Client.html#getAllServers">getAllServers</a></li><li data-type='method'><a href="Client.html#getSelfServer">getSelfServer</a></li><li data-type='method'><a href="Client.html#getServer">getServer</a></li><li data-type='method'><a href="Client.html#getStatistics">getStatistics</a></li><li data-type='method'><a href="Client.html#getUpvotes">getUpvotes</a></li><li data-type='method'><a href="Client.html#getUser">getUser</a></li><li data-type='method'><a href="Client.html#getUserServers">getUserServers</a></li><li data-type='method'><a href="Client.html#hasUpvoted">hasUpvoted</a></li></ul></li><li><a href="Collection.html">Collection</a><ul class='methods'><li data-type='method'><a href="Collection.html#filter">filter</a></li><li data-type='method'><a href="Collection.html#map">map</a></li><li data-type='method'><a href="Collection.html#toArray">toArray</a></li><li data-type='method'><a href="Collection.html#toJSON">toJSON</a></li><li data-type='method'><a href="Collection.html#toKeyArray">toKeyArray</a></li></ul></li><li><a href="HTTPError.html">HTTPError</a><ul class='methods'><li data-type='method'><a href="HTTPError.html#getCode">getCode</a></li><li data-type='method'><a href="HTTPError.html#getMessage">getMessage</a></li></ul></li><li><a href="Pagination.html">Pagination</a><ul class='methods'><li data-type='method'><a href="Pagination.html#filter">filter</a></li><li data-type='method'><a href="Pagination.html#getPage">getPage</a></li><li data-type='method'><a href="Pagination.html#getPages">getPages</a></li><li data-type='method'><a href="Pagination.html#map">map</a></li><li data-type='method'><a href="Pagination.html#toArray">toArray</a></li><li data-type='method'><a href="Pagination.html#toJSON">toJSON</a></li><li data-type='method'><a href="Pagination.html#toKeyArray">toKeyArray</a></li></ul></li><li><a href="Server.html">Server</a><ul class='methods'><li data-type='method'><a href="Server.html#getCreatedAt">getCreatedAt</a></li><li data-type='method'><a href="Server.html#getFullDescription">getFullDescription</a></li><li data-type='method'><a href="Server.html#getIconURL">getIconURL</a></li><li data-type='method'><a href="Server.html#getID">getID</a></li><li data-type='method'><a href="Server.html#getLinks">getLinks</a></li><li data-type='method'><a href="Server.html#getName">getName</a></li><li data-type='method'><a href="Server.html#getOwners">getOwners</a></li><li data-type='method'><a href="Server.html#getShortDescription">getShortDescription</a></li><li data-type='method'><a href="Server.html#getUpdatedAt">getUpdatedAt</a></li><li data-type='method'><a href="Server.html#getURL">getURL</a></li><li data-type='method'><a href="Server.html#getVanity">getVanity</a></li><li data-type='method'><a href="Server.html#isNSFW">isNSFW</a></li></ul></li><li><a href="Statistics.html">Statistics</a><ul class='methods'><li data-type='method'><a href="Statistics.html#getServers">getServers</a></li><li data-type='method'><a href="Statistics.html#getTags">getTags</a></li><li data-type='method'><a href="Statistics.html#getUsers">getUsers</a></li></ul></li><li><a href="Upvote.html">Upvote</a><ul class='methods'><li data-type='method'><a href="Upvote.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="Upvote.html#getUser">getUser</a></li></ul></li><li><a href="User.html">User</a><ul class='methods'><li data-type='method'><a href="User.html#getAvatarURL">getAvatarURL</a></li><li data-type='method'><a href="User.html#getDiscriminator">getDiscriminator</a></li><li data-type='method'><a href="User.html#getID">getID</a></li><li data-type='method'><a href="User.html#getTag">getTag</a></li><li data-type='method'><a href="User.html#getURL">getURL</a></li><li data-type='method'><a href="User.html#getUsername">getUsername</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Structures/Server.js</h1>
+    
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const Collection = require('./Collection');
+const User = require('./User');
+
+/**
+ * A class which represents a server that is listed on the site.
+ * @constructor
+ */
+class Server {
+	/**
+	 * @param {object} server Contains the server information returned raw from the site.
+	 * @property {string} id The ID of the server.
+	 * @property {string} name The name of the server.
+	 * @property {string} shortDescription A short description of the purpose of the server.
+	 * @property {string} fullDescription A detailed description of the server. Contains Markdown, may be blank.
+	 * @property {string} iconURL The URL for the avatar of the server. Not guaranteed to be available from Discord.
+	 * @property {boolean} iconChildFriendly A boolean stating if the avatar should be considered child friendly.
+	 * @property {Collection&lt;string, User>} owners A collection of User classes which hold listed owner's information.
+	 * @property {?string} vanity A string containing the vanity of the server. May be null.
+	 * @property {object} links An object that contains links.
+	 * @property {number} createdAt A timestamp in milliseconds since the server was added to the site.
+	 * @property {number} updatedAt A timestamp in milliseconds since the server was last updated.
+	 * @memberof Server
+	 */
+	constructor(server) {
+		this.id = server.id;
+		this.username = server.username;
+		this.discriminator = server.discriminator;
+		this.shortDescription = server.short_description;
+		this.fullDescription = server.full_description;
+		this.iconURL = server.icon;
+		this.iconChildFriendly = server.icon_child_friendly;
+		this.owners = new Collection();
+		for (let i = 0; i &lt; server.owners.length; i++) {
+			this.owners.set(server.owners[i].id, new User(server.owners[i]));
+		}
+		this.vanity = server.vanity;
+		this.links = server.links;
+		this.createdAt = server.created_at;
+		this.updatedAt = server.updated_at;
+	}
+
+	/**
+	 * Returns an absolute path to view the server on the site.
+	 * @returns {string} The ID of the server.
+	 * @memberof Server
+	 */
+	getURL() {
+		return 'https://serverlist.space/server/' + this.getID();
+	}
+
+	/**
+	 * Gets the ID of the server.
+	 * @returns {string}
+	 * @memberof Server
+	 */
+	getID() {
+		return this.id;
+	}
+
+	/**
+	 * Gets the name of the server.
+	 * @returns {string} The name of the server.
+	 * @memberof Server
+	 */
+	getName() {
+		return this.name;
+	}
+
+	/**
+	 * Gets the short description of the purpose of the server.
+	 * @returns {string} A short description of the purpose of the server.
+	 * @memberof Server
+	 */
+	getShortDescription() {
+		return this.shortDescription;
+	}
+
+	/**
+	 * Gets the detailed description of the server. Contains Markdown, may be blank.
+	 * @returns {string} A detailed description of the server. Contains Markdown, may be blank.
+	 * @memberof Server
+	 */
+	getFullDescription() {
+		return this.fullDescription;
+	}
+
+	/**
+	 * Gets the URL for the avatar of the server. Not guaranteed to be available from Discord.
+	 * @returns {string} The URL for the avatar of the server. Not guaranteed to be available from Discord.
+	 * @memberof Server
+	 */
+	getIconURL() {
+		return this.iconURL;
+	}
+
+	/**
+	 * Gets the collection of User classes which hold listed owner's information.
+	 * @returns {Collection&lt;User>} A collection of User classes which hold listed owner's information.
+	 * @memberof Server
+	 */
+	getOwners() {
+		return this.owners;
+	}
+
+	/**
+	 * Gets the string containing the vanity of the server. May be null.
+	 * @returns {?string} A string containing the vanity of the server. May be null.
+	 * @memberof Server
+	 */
+	getVanity() {
+		return this.vanity;
+	}
+
+	/**
+	 * Gets the boolean stating if the icon is not considered child friendly.
+	 * @returns {boolean} A boolean stating if the icon is not considered child friendly.
+	 * @memberof Server
+	 */
+	isNSFW() {
+		return !this.iconChildFriendly;
+	}
+
+	/**
+	 * Gets an object that contains links.
+	 * @returns {object} An object that contains links.
+	 * @memberof Server
+	 */
+	getLinks() {
+		return this.links;
+	}
+
+	/**
+	 * Gets the date since the server was added to the site.
+	 * @returns {Date} A date since the server was added to the site.
+	 * @memberof Server
+	 */
+	getCreatedAt() {
+		return new Date(this.createdAt);
+	}
+
+	/**
+	 * Gets the date since the server was last updated.
+	 * @returns {Date} A date since the server was last updated.
+	 * @memberof Server
+	 */
+	getUpdatedAt() {
+		return new Date(this.updatedAt);
+	}
+}
+
+module.exports = Server;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Jan 12 2019 19:05:21 GMT-0600 (Central Standard Time) using the Toast theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
