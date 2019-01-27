@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Structures/Collection.js - Documentation</title>
+    <title>WebSocket.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -28,7 +28,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Structures/Collection.js</h1>
+    <h1 class="page-title">WebSocket.js</h1>
     
     
 
@@ -37,81 +37,202 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * An extended version of Map, including methods that are Array-like.
- * @extends Map
- * @constructor
+            <pre class="prettyprint source linenums"><code>const ws = require('ws');
+const EventEmitter = require('events').EventEmitter;
+
+const User = require('./Structures/User');
+
+/**
+ * Creates a new gateway client.
+ * @extends EventEmitter
+ * @class
  */
-class Collection extends Map {
+class WebSocket extends EventEmitter {
 	/**
-	 * @param {*} [iterable] An iterable something to be made into key-value pairs.
-	 * @memberof Collection
+	 * @param {object} options An object with options for the gateway.
+	 * @param {array&lt;string>} options.tokens An array of server tokens, used as authentication.
+	 * @param {boolean} [options.reconnect] Tells the websocket to reconnect after a disconnect. Always reconnects after a 4006 error.
+	 * @param {number} [options.heartbeatInterval] The amount of seconds between heartbeats. Must be below or equal to 55.
 	 */
-	constructor(iterable) {
-		super(iterable);
+	constructor(options) {
+		super();
+
+		if (!(options instanceof Object)) throw new TypeError('Options must be an object');
+		if (!(options.tokens instanceof Array) || !options.tokens.every((token) => typeof token === 'string')) throw new TypeError('\'tokens\' must be an array of strings');
+		if ('heartbeatInterval' in options &amp;&amp; !(options.tokens instanceof Number)) throw new TypeError('\'heartbeatInterval\' must be a number when provided');
+		if ('heartbeatInterval' in options &amp;&amp; options.heartbeatInterval > 55) throw new TypeError('\'heartbeatInterval\' must be less than or equal to 55');
+		if ('reconnect' in options &amp;&amp; !(options.reconnect instanceof Boolean)) throw new TypeError('\'reconnect\' must be a boolean when provided');
+
+		this._socket = new ws('wss://gateway.serverlist.space');
+
+		this._socket.on('open', this._onOpen.bind(this));
+		this._socket.on('message', this._onMessage.bind(this));
+		this._socket.on('close', this._onClose.bind(this));
+		this._socket.on('error', this._onError.bind(this));
+
+		this._heartbeat = null;
+
+		this._options = {
+			heartbeatInterval: options.heartbeatInterval || 45,
+			reconnect: options.reconnect || true,
+			tokens: options.tokens
+		};
 	}
 
 	/**
-	 * Takes all values in the array, and calls the callback for each value and returns an array of filtered values.
-	 * @param {Function} func The array that is used to filter values.
-	 * @returns {Array} The result of filtered values.
-	 * @memberof Collection
+	 * Called when the socket opens.
+	 * @private
+	 * @extends WebSocket
 	 */
-	filter(func) {
-		const result = [];
-		const keys = this.toKeyArray();
-		const values = this.toArray();
-		for (let i = 0; i &lt; values.length; i++) {
-			if (func(values[i], keys[i])) result.push(values[i]);
+	_onOpen() {
+		this.emit('connected');
+
+		this._send(0, {
+			tokens: this._options.tokens
+		});
+
+		this._heartbeat = setInterval(() => {
+			if (this._socket.readyState === this._socket.OPEN) {
+				this._sendHeartbeat();
+			} else {
+				clearInterval(this._heartbeat);
+
+				this._heartbeat = null;
+			}
+		}, 1000 * this._options.heartbeatInterval);
+
+		this._heartbeat.unref();
+	}
+
+	/**
+	 * Called when the socket sends a message.
+	 * @private
+	 * @extends WebSocket
+	 */
+	_onMessage(payload) {
+		try {
+			payload = JSON.parse(payload);
+
+			if (payload.op === 2) {
+				this.emit('view', new ServerViewEvent(payload.d));
+			} else if (payload.op === 3) {
+				this.emit('join', new ServerJoinEvent(payload.d));
+			} else if (payload.op === 4) {
+				this.emit('upvote', new ServerUpvoteEvent(payload.d));
+
+			}
+		} catch (e) {
+			this.emit('error', e);
 		}
-		return result;
 	}
 
 	/**
-	 * Takes each value, calls the function with the value and returns an array of the output of the callback.
-	 * @param {Function} func
-	 * @returns {Array} The result of the mapped values.
-	 * @memberof Collection
+	 * Called when the socket closes.
+	 * @private
+	 * @extends WebSocket
 	 */
-	map(func) {
-		const keys = this.toKeyArray();
-		const values = this.toArray();
-		const result = [];
-		for (let i = 0; i &lt; values.length; i++) {
-			result.push(func(values[i], keys[i]));
+	_onClose(code, message) {
+		clearInterval(this._heartbeat);
+		this._heartbeat = null;
+
+		if (this._options.reconnect || code === 4006) {
+			delete this._socket;
+
+			this._socket = new ws('wss://gateway.serverlist.space');
+			this._socket.on('open', this._onOpen.bind(this));
+			this._socket.on('message', this._onMessage.bind(this));
+			this._socket.on('close', this._onClose.bind(this));
+			this._socket.on('error', this._onError.bind(this));
 		}
-		return result;
+
+		if (code !== 4006) this.emit('disconnected', new CloseEvent(code, message));
 	}
 
 	/**
-	 * Converts the values in the collection to an array.
-	 * @returns {Array} The collection converted to an array.
-	 * @memberof Collection
+	 * Called when the socket errors.
+	 * @private
+	 * @extends WebSocket
 	 */
-	toArray() {
-		return [ ...this.values() ];
+	_onError(...errors) {
+		this.emit('error', ...errors);
 	}
 
 	/**
-	 * Converts the keys in this collection to an array.
-	 * @returns {Array} The collection converted to an array.
-	 * @memberof Collection
+	 * Used to send a heartbeat to the server.
+	 * @private
+	 * @extends WebSocket
 	 */
-	toKeyArray() {
-		return [ ...this.keys() ];
+	_sendHeartbeat() {
+		this._send(1, {});
+
+		this.emit('heartbeat', Date.now());
 	}
 
 	/**
-	 * Converts the values in the collection into a string version of an array.
-	 * @returns {string} An array converted into string format.
-	 * @memberof Collection
+	 * Sends a payload to the server.
+	 * @private
+	 * @extends WebSocket
 	 */
-	toJSON() {
-		return JSON.stringify(this.toArray());
+	_send(op, d) {
+		this._socket.send(JSON.stringify({ op, t: Date.now(), d }));
 	}
 }
 
-module.exports = Collection;</code></pre>
+/**
+ * The class that holds information on close events.
+ * @class
+ * @param {number} code The close code.
+ * @param {?string} message The close message.
+ * @property {number} code The close code.
+ * @property {?string} message The close message.
+ */
+class CloseEvent {
+	constructor(code, message) {
+		this.code = code;
+		this.message = message;
+	}
+}
+
+/**
+ * The class that is used for server views.
+ * @class
+ * @param {object} data The raw payload data that was sent from the server.
+ * @property {string} server The ID of the server that was viewed.
+ */
+class ServerViewEvent {
+	constructor(data) {
+		this.server = data.server;
+	}
+}
+
+/**
+ * The class that is used for server joins.
+ * @class
+ * @param {object} data The raw payload data that was sent from the server.
+ * @property {string} server The ID of the server that was viewed.
+ */
+class ServerJoinEvent {
+	constructor(data) {
+		this.server = data.server;
+	}
+}
+
+/**
+ * The class that is used for server upvotes.
+ * @class
+ * @param {object} data The raw payload data that was sent from the server.
+ * @property {string} server The ID of the server that was viewed.
+ * @property {User} user The class that holds information on who upvoted the server.
+ */
+class ServerUpvoteEvent {
+	constructor(data) {
+		this.server = data.server;
+		this.user = new User(data.user);
+	}
+}
+
+module.exports = WebSocket;
+module.exports.CloseEvent = CloseEvent;</code></pre>
         </article>
     </section>
 
